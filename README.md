@@ -1,90 +1,105 @@
-# 🧠 Neural Network Digit Classifier (C)
+# Neural Network Digit Classifier
 
-A single-layer neural network for image classification written in C. Uses pre-trained weights and biases to classify images (e.g. handwritten digits) via a weighted sum → ReLU → softmax pipeline.
+A single-layer neural network for classifying handwritten digits (0–9) from the MNIST dataset, written in C from scratch.
 
----
+![Architecture](https://i.imgur.com/placeholder.png)
 
-## Architecture
+## How it works
+
+The program reads a handwritten digit image (28×28 pixels = 784 values) from stdin and classifies it using a pre-trained neural network.
 
 ```
-Input image (IMAGE_SIZE pixels)
+Input image (784 pixels)
         ↓
-Weighted sum + bias  (per neuron)
+Weighted sum + bias (per neuron)
         ↓
 ReLU activation
         ↓
 Softmax → probability distribution
         ↓
-argmax → predicted class
+argmax → predicted digit (0–9)
 ```
 
-Pre-trained weights and biases are loaded from `data.h`. Helper functions (`relu`, `load_data`, `print_image`) are declared in `functions.h`.
-
----
+Pre-trained weights and biases are stored in `data.h`.
 
 ## Build
-
-Requires a C11-compatible compiler and the math library.
 
 ```bash
 gcc -o classifier main.c -lm
 ```
 
----
-
 ## Usage
 
 The program reads a **mode number** from stdin, then additional input depending on the mode.
 
-```
+```bash
 ./classifier
 ```
 
-### Modes
-
-| Mode | Description | Additional input |
-|------|-------------|-----------------|
-| `1` | Print weights of a neuron as a 10-column grid | neuron index |
-| `2` | Compute weighted sum for a neuron on an image | neuron index, then image pixels |
-| `3` | Apply ReLU to a single value | one float |
-| `4` | Apply softmax to a vector of raw outputs | NUMBER_OF_NEURONS floats |
-| `5` | Find the index of the maximum value (argmax) | NUMBER_OF_NEURONS floats |
-| `6` | Load and print an image as ASCII | image pixels |
-| `7` | Full inference: load image → classify → print predicted class | image pixels |
-
----
+| Mode | Description | Input |
+|------|-------------|-------|
+| 1 | Print weights of a neuron | neuron index |
+| 2 | Compute weighted sum for a neuron | neuron index + image pixels |
+| 3 | Apply ReLU to a value | one float |
+| 4 | Apply Softmax to raw outputs | 10 floats |
+| 5 | Find index of max value (argmax) | 10 floats |
+| 6 | Load and print image as ASCII | image pixels |
+| 7 | Full classification of an image | image pixels |
 
 ## Examples
 
 ```bash
-# Print weights of neuron 3
-echo "1 3" | ./classifier
-
-# Run full classification on an image (pixels provided via stdin)
-(echo 7; cat image_pixels.txt) | ./classifier
+# Classify a digit image (mode 7)
+./classifier < stdin/mode07/digit_7.txt
 # → 7
 
-# Apply softmax to 10 raw scores
+# Print weights of neuron 3 (mode 1)
+echo "1 3" | ./classifier
+
+# Apply softmax to 10 raw scores (mode 4)
 echo "4
 1.0 2.0 0.5 -1.0 3.0 0.0 1.5 2.5 -0.5 0.1" | ./classifier
-# → 0.02 0.06 0.01 0.00 0.16 0.01 0.03 0.09 0.01 0.01
 ```
 
----
+## Test data
+
+The `stdin/` folder contains ready-to-use input files for each mode:
+
+```bash
+./classifier < stdin/mode07/sample.txt
+```
+
+The `digits-txt/` folder contains digit images as text files (784 pixel values in range 0–1).  
+The `digits-img/` folder contains the same digits as visual image files.
+
+## Python scripts
+
+Two helper scripts are included for experimentation:
+
+- `img2txt.py` — converts a grayscale image to text format (pixel values 0–1)
+- `txt2img.py` — converts a text file back to a visual image
+
+```bash
+python python_scripts/img2txt.py my_digit.png
+python python_scripts/txt2img.py digits-txt/digit_7.txt
+```
 
 ## File structure
 
 ```
 .
-├── main.c        # mode dispatcher + core functions (weightedSum, softMax, findMax)
-├── functions.h   # declarations for relu(), load_data(), print_image()
-└── data.h        # pre-trained weights[] and bias[] arrays
+├── main.c          # mode dispatcher + core logic
+├── functions.h     # declarations for relu(), load_data(), print_image()
+├── data.h          # pre-trained weights and biases
+├── digits-txt/     # digit images as text files (pixel values)
+├── digits-img/     # digit images as PNG files
+├── python_scripts/ # helper scripts for image conversion
+└── stdin/          # test input files for each mode (mode01–mode07)
 ```
 
----
+## Dataset
 
-## Notes
+Based on the [MNIST database](https://en.wikipedia.org/wiki/MNIST_database) — 60,000 training and 10,000 test images of handwritten digits.  
+Pixel values are normalized from [0, 255] to [0, 1].
 
-- Softmax uses the **max-subtraction trick** for numerical stability
-- Mode `7` is the full end-to-end inference pipeline
-- `IMAGE_SIZE`, `IMAGE_WIDTH`, `IMAGE_HEIGHT`, and `NUMBER_OF_NEURONS` are defined as macros (likely in `data.h` or `functions.h`)
+Inspired by [Andrew Carter's MNIST Neural Network in C](https://github.com/AndrewCarterUK/mnist-neural-network-plain-c).
