@@ -2,8 +2,6 @@
 
 A single-layer neural network for classifying handwritten digits (0–9) from the MNIST dataset, written in C from scratch.
 
-![Architecture](https://i.imgur.com/placeholder.png)
-
 ## How it works
 
 The program reads a handwritten digit image (28×28 pixels = 784 values) from stdin and classifies it using a pre-trained neural network.
